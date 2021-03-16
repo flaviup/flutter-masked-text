@@ -1,6 +1,7 @@
 library flutter_masked_text;
 
 import 'package:flutter/material.dart';
+import 'package:decimal/decimal.dart';
 
 class MaskedTextController extends TextEditingController {
   MaskedTextController({String text, this.mask, Map<String, RegExp> translator})
@@ -128,7 +129,7 @@ class MaskedTextController extends TextEditingController {
  */
 class MoneyMaskedTextController extends TextEditingController {
   MoneyMaskedTextController(
-      {double initialValue = 0.0,
+      {Decimal initialValue,
         this.decimalSeparator = ',',
         this.thousandSeparator = '.',
         this.rightSymbol = '',
@@ -141,7 +142,7 @@ class MoneyMaskedTextController extends TextEditingController {
       this.afterChange(this.text, this.numberValue);
     });
 
-    this.updateValue(initialValue);
+    this.updateValue(initialValue ?? Decimal.zero);
   }
 
   final String decimalSeparator;
@@ -150,12 +151,12 @@ class MoneyMaskedTextController extends TextEditingController {
   final String leftSymbol;
   final int precision;
 
-  Function afterChange = (String maskedValue, double rawValue) {};
+  Function afterChange = (String maskedValue, Decimal rawValue) {};
 
-  double _lastValue = 0.0;
+  Decimal _lastValue = Decimal.zero;
 
-  void updateValue(double value) {
-    double valueToUse = value;
+  void updateValue(Decimal value) {
+    var valueToUse = value;
 
     if (value.toStringAsFixed(0).length > 12) {
       valueToUse = _lastValue;
@@ -183,12 +184,12 @@ class MoneyMaskedTextController extends TextEditingController {
     }
   }
 
-  double get numberValue {
+  Decimal get numberValue {
     List<String> parts = _getOnlyNumbers(this.text).split('').toList(growable: true);
 
     parts.insert(parts.length - precision, '.');
 
-    return double.parse(parts.join());
+    return Decimal.parse(parts.join());
   }
 
   _validateConfig() {
@@ -209,7 +210,7 @@ class MoneyMaskedTextController extends TextEditingController {
     return cleanedText;
   }
 
-  String _applyMask(double value) {
+  String _applyMask(Decimal value) {
     List<String> textRepresentation = value.toStringAsFixed(precision)
         .replaceAll('.', '')
         .split('')
